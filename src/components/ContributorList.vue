@@ -22,7 +22,7 @@ function initial(c: Contribution): string {
   </div>
   <ul v-else class="list">
     <li v-for="(c, i) in sorted" :key="c.timestamp + '-' + i" class="row">
-      <span class="avatar" :data-hue="i % 5">{{ initial(c) }}</span>
+      <span class="avatar">{{ initial(c) }}</span>
       <span class="who">
         <span class="name">{{ c.contributorName || 'Anonymous' }}</span>
         <span class="when">{{ timeAgo(c.timestamp) }}</span>
@@ -64,15 +64,10 @@ function initial(c: Contribution): string {
   border-radius: 50%;
   font-weight: 800;
   font-size: 0.95rem;
-  color: #fff;
+  background: rgba(255, 93, 115, 0.14);
+  color: var(--coral-dark);
   flex-shrink: 0;
 }
-
-.avatar[data-hue='0'] { background: #0582ca; }
-.avatar[data-hue='1'] { background: #21bca5; }
-.avatar[data-hue='2'] { background: #e9b213; color: var(--nimiq-blue); }
-.avatar[data-hue='3'] { background: #8f4ed6; }
-.avatar[data-hue='4'] { background: #fa7268; }
 
 .who {
   display: flex;
@@ -96,7 +91,7 @@ function initial(c: Contribution): string {
 
 .amount {
   font-weight: 800;
-  color: var(--nimiq-green);
+  color: var(--coral-dark);
   font-size: 0.95rem;
   white-space: nowrap;
 }
