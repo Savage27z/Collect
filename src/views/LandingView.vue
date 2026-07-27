@@ -7,6 +7,7 @@ const howRef = ref<HTMLElement | null>(null)
 const revealed = ref<Record<string, boolean>>({ what: false, how: false })
 
 let observer: IntersectionObserver | null = null
+let failsafe = 0
 
 onMounted(() => {
   observer = new IntersectionObserver(
@@ -24,9 +25,17 @@ onMounted(() => {
   for (const el of [whatRef.value, howRef.value]) {
     if (el) observer.observe(el)
   }
+  // Failsafe: if the observer never fires (unusual WebViews), reveal everything
+  // rather than leaving sections stuck at opacity 0.
+  failsafe = window.setTimeout(() => {
+    revealed.value = { what: true, how: true }
+  }, 2500)
 })
 
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  clearTimeout(failsafe)
+})
 
 const steps = [
   { num: '1', title: 'Create a collection', body: 'Name it and set a goal — takes about ten seconds.' },
