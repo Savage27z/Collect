@@ -142,3 +142,74 @@ async function contribute() {
   </div>
 </template>
 
+<style scoped>
+.notfound {
+  text-align: center;
+}
+
+.hero {
+  text-align: center;
+}
+
+.description {
+  color: var(--text-soft);
+  margin: 0.5rem 0 1.25rem;
+  line-height: 1.5;
+}
+
+.hero h1 {
+  margin-bottom: 0.25rem;
+}
+
+.hero :deep(.progress) {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  flex: 1;
+  min-width: 4rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.chip.active {
+  border-color: var(--nimiq-gold);
+  background: rgba(233, 178, 19, 0.12);
+}
+
+.optional {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.pay-btn {
+  font-size: 1.05rem;
+}
+
+.center {
+  text-align: center;
+}
+
+.tx {
+  display: block;
+  margin-top: 0.25rem;
+  opacity: 0.8;
+}
+</style>
