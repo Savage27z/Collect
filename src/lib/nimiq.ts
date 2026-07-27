@@ -37,7 +37,7 @@ export async function getDefaultAddress(): Promise<string | null> {
     const provider = await nimiqInit
     if (!provider) return null
     const accounts = await provider.listAccounts()
-    return accounts?.[0] ?? null
+    return Array.isArray(accounts) ? accounts[0] ?? null : null
   } catch {
     return null
   }
