@@ -113,3 +113,64 @@ function toggleClosed() {
   </div>
 </template>
 
+<style scoped>
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.status {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+.status.open {
+  background: rgba(33, 188, 165, 0.12);
+  color: #148673;
+}
+
+.status.closed {
+  background: rgba(31, 35, 72, 0.08);
+  color: var(--text-soft);
+}
+
+.share-card {
+  align-items: center;
+  text-align: center;
+}
+
+.qr {
+  width: min(240px, 70vw);
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.link-box {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: rgba(31, 35, 72, 0.05);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  word-break: break-all;
+  cursor: pointer;
+  max-height: 4.5em;
+  overflow: hidden;
+}
+
+.share-buttons {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.share-buttons .btn {
+  flex: 1;
+}
+</style>
