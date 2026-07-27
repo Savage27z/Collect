@@ -93,11 +93,6 @@ function create() {
       </button>
     </div>
 
-    <div class="perks">
-      <span>⚡ Instant settlement</span>
-      <span>🆓 Zero fees</span>
-      <span>🔗 No accounts needed</span>
-    </div>
   </div>
 </template>
 
@@ -119,14 +114,5 @@ function create() {
   letter-spacing: 0;
   font-weight: 400;
   opacity: 0.7;
-}
-.perks {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-soft);
 }
 </style>
