@@ -1,0 +1,24 @@
+export interface Contribution {
+  contributorName?: string
+  /** Amount in NIM (decimal). */
+  amount: number
+  /** Nimiq transaction hash, when paid through Nimiq Pay. */
+  txHash?: string
+  timestamp: number
+}
+
+export type CollectionStatus = 'open' | 'closed'
+
+export interface Collection {
+  /** Short unique ID (nanoid), used in the share URL. */
+  id: string
+  title: string
+  description?: string
+  /** Goal amount in NIM (decimal). */
+  goalAmount: number
+  /** Organizer's Nimiq address (NQ…) — where contributions are sent. */
+  organizerAddress: string
+  contributions: Contribution[]
+  status: CollectionStatus
+  createdAt: number
+}
