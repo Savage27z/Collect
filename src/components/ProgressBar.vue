@@ -22,7 +22,9 @@ const reached = computed(() => props.raised >= props.goal && props.goal > 0)
       <span class="goal">of {{ formatNim(goal) }} NIM goal</span>
     </div>
     <div class="progress-track" role="progressbar" :aria-valuenow="Math.round(percent)" aria-valuemin="0" aria-valuemax="100">
-      <div class="progress-fill" :class="{ reached }" :style="{ width: percent + '%' }" />
+      <div class="progress-fill" :class="{ reached }" :style="{ width: percent + '%' }">
+        <span class="shimmer" />
+      </div>
     </div>
     <div class="progress-percent" :class="{ reached }">
       {{ reached ? '🎉 Goal reached!' : Math.round(percent) + '% funded' }}
@@ -57,31 +59,48 @@ const reached = computed(() => props.raised >= props.goal && props.goal > 0)
 }
 
 .progress-track {
-  height: 12px;
+  height: 14px;
   border-radius: 999px;
-  background: rgba(31, 35, 72, 0.08);
+  background: rgba(43, 30, 20, 0.08);
   overflow: hidden;
 }
 
 .progress-fill {
+  position: relative;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #0582ca, #265dd7);
+  background: var(--coral);
+  overflow: hidden;
   transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .progress-fill.reached {
-  background: linear-gradient(90deg, #21bca5, #41a38e);
+  background: var(--success);
+}
+
+.shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: shimmer 2.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
 }
 
 .progress-percent {
   margin-top: 0.4rem;
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--nimiq-light-blue);
+  color: var(--coral-dark);
 }
 
 .progress-percent.reached {
-  color: var(--nimiq-green);
+  color: var(--success);
 }
 </style>
