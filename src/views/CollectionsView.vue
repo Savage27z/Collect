@@ -81,7 +81,7 @@ const collections = allCollections()
   display: block;
   height: 6px;
   border-radius: 999px;
-  background: rgba(31, 35, 72, 0.08);
+  background: rgba(43, 30, 20, 0.08);
   overflow: hidden;
 }
 
@@ -89,11 +89,11 @@ const collections = allCollections()
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #0582ca, #265dd7);
+  background: var(--coral);
 }
 
 .fill.done {
-  background: linear-gradient(90deg, #21bca5, #41a38e);
+  background: var(--success);
 }
 
 .status {
@@ -107,12 +107,12 @@ const collections = allCollections()
 }
 
 .status.open {
-  background: rgba(33, 188, 165, 0.12);
-  color: #148673;
+  background: rgba(255, 93, 115, 0.14);
+  color: var(--coral-dark);
 }
 
 .status.closed {
-  background: rgba(31, 35, 72, 0.08);
+  background: rgba(43, 30, 20, 0.08);
   color: var(--text-soft);
 }
 </style>
