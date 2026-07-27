@@ -162,6 +162,11 @@ textarea:focus {
   border-color: var(--nimiq-light-blue);
 }
 
+.btn,
+.btn:hover {
+  text-decoration: none;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
