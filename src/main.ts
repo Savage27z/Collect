@@ -7,7 +7,8 @@ import App from './App.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: () => import('./views/CreateView.vue') },
+    { path: '/', component: () => import('./views/LandingView.vue') },
+    { path: '/create', component: () => import('./views/CreateView.vue') },
     { path: '/c/:id', component: () => import('./views/CollectionView.vue') },
     { path: '/c/:id/dashboard', component: () => import('./views/DashboardView.vue') },
     { path: '/collections', component: () => import('./views/CollectionsView.vue') },
