@@ -42,3 +42,32 @@ export async function getDefaultAddress(): Promise<string | null> {
     return null
   }
 }
+
+export function nimToLuna(nim: number): number {
+  return Math.round(nim * LUNA_PER_NIM)
+}
+
+/**
+ * Ask Nimiq Pay to send `amountNim` NIM to `recipient`. The native app shows
+ * its confirmation dialog; resolves with the transaction hash.
+ */
+export async function payNim(recipient: string, amountNim: number, reference: string): Promise<string> {
+  const provider = await getNimiq()
+  // The data field (max 64 bytes) tags the transaction with the collection name.
+  const data = reference.slice(0, 64)
+  const result = await provider.sendBasicTransactionWithData({
+    recipient,
+    value: nimToLuna(amountNim),
+    data,
+  })
+  if (typeof result === 'string') return result
+  return (result as any)?.transactionHash ?? (result as any)?.hash ?? JSON.stringify(result)
+}
+
+export function useNimiq() {
+  return {
+    nimiqReady: readonly(nimiqReady),
+    nimiqConnecting: readonly(nimiqConnecting),
+    getNimiq,
+  }
+}
