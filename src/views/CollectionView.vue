@@ -188,8 +188,8 @@ async function contribute() {
 }
 
 .chip.active {
-  border-color: var(--nimiq-gold);
-  background: rgba(233, 178, 19, 0.12);
+  border-color: var(--coral);
+  background: rgba(255, 93, 115, 0.12);
 }
 
 .optional {
