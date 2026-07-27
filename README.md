@@ -15,4 +15,37 @@ Built for the [Nimiq Mini Apps Competition](https://miniappscompetition.com).
 
 ## Why Nimiq Pay
 
-- **No accounts 
+- **No accounts for payers** — open link → approve payment. Done.
+- **Instant settlement** — no 2-day payout delays.
+- **Near-zero fees** — crypto-native.
+- **Payments go peer-to-peer** — directly from contributor to organizer; the app never touches funds.
+
+## Tech
+
+- Vite + Vue 3 + TypeScript
+- [`@nimiq/mini-app-sdk`](https://nimiq.dev/mini-apps/) — provider init, `listAccounts`, `sendBasicTransactionWithData`
+- [`@nimiq/style`](https://nimiq.github.io/nimiq-style/) — Nimiq design system
+- No backend: collections live in localStorage, and every share link carries a
+  base64url snapshot of the collection (`?d=…`) so contributors on other
+  devices see the goal, organizer address, and contributor wall.
+
+## Run it
+
+```bash
+npm install
+npm run dev
+```
+
+Outside Nimiq Pay the app runs in **demo mode** — payments are simulated so the full flow can be tested in any browser. Inside Nimiq Pay, real NIM transactions are sent with the collection name attached as on-chain data.
+
+## Build
+
+```bash
+npm run build
+```
+
+Deploys as a static site (Vercel / Netlify / GitHub Pages). For SPA routing, make sure unknown paths rewrite to `index.html`.
+
+## License
+
+[MIT](LICENSE)
