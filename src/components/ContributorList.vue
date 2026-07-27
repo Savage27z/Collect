@@ -32,3 +32,72 @@ function initial(c: Contribution): string {
   </ul>
 </template>
 
+<style scoped>
+.empty {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.avatar[data-hue='0'] { background: #0582ca; }
+.avatar[data-hue='1'] { background: #21bca5; }
+.avatar[data-hue='2'] { background: #e9b213; color: var(--nimiq-blue); }
+.avatar[data-hue='3'] { background: #8f4ed6; }
+.avatar[data-hue='4'] { background: #fa7268; }
+
+.who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.when {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+.amount {
+  font-weight: 800;
+  color: var(--nimiq-green);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+</style>
