@@ -29,7 +29,7 @@ async function renderQr() {
   qrDataUrl.value = await QRCode.toDataURL(shareDeepLink.value, {
     width: 480,
     margin: 1,
-    color: { dark: '#1f2348', light: '#ffffff' },
+    color: { dark: '#2b1e14', light: '#ffffff' },
   })
 }
 
@@ -131,12 +131,12 @@ function toggleClosed() {
 }
 
 .status.open {
-  background: rgba(33, 188, 165, 0.12);
-  color: #148673;
+  background: rgba(255, 93, 115, 0.14);
+  color: var(--coral-dark);
 }
 
 .status.closed {
-  background: rgba(31, 35, 72, 0.08);
+  background: rgba(43, 30, 20, 0.08);
   color: var(--text-soft);
 }
 
@@ -155,7 +155,7 @@ function toggleClosed() {
 .link-box {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  background: rgba(31, 35, 72, 0.05);
+  background: rgba(43, 30, 20, 0.05);
   border-radius: 8px;
   font-size: 0.72rem;
   word-break: break-all;
