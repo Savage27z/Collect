@@ -71,7 +71,7 @@ function toggleClosed() {
 <template>
   <div v-if="!collection" class="card stack" style="text-align: center">
     <h1>Collection not found</h1>
-    <router-link to="/" class="btn btn-primary">Create a collection</router-link>
+    <router-link to="/create" class="btn btn-primary">Create a collection</router-link>
   </div>
 
   <div v-else class="stack">

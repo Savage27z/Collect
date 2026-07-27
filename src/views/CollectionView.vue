@@ -85,7 +85,7 @@ async function contribute() {
   <div v-if="!collection" class="card stack notfound">
     <h1>Collection not found</h1>
     <p class="hint">This link may be incomplete — ask the organizer to share it again.</p>
-    <router-link to="/" class="btn btn-primary">Create your own collection</router-link>
+    <router-link to="/create" class="btn btn-primary">Create your own collection</router-link>
   </div>
 
   <div v-else class="stack">

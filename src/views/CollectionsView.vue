@@ -11,7 +11,7 @@ const collections = allCollections()
 
     <div v-if="collections.length === 0" class="card empty">
       <p>Nothing here yet.</p>
-      <router-link to="/" class="btn btn-gold">Start a collection</router-link>
+      <router-link to="/create" class="btn btn-gold">Start a collection</router-link>
     </div>
 
     <router-link
