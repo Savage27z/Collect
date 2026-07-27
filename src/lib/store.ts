@@ -58,3 +58,36 @@ export function allCollections(): Collection[] {
   return Object.values(state.collections).sort((a, b) => b.createdAt - a.createdAt)
 }
 
+/** Store a collection received via a shared link so the page survives reloads. */
+export function importCollection(collection: Collection) {
+  const existing = state.collections[collection.id]
+  if (existing) {
+    // Keep whichever side knows about more contributions; never lose local ones.
+    const seen = new Set(existing.contributions.map(c => `${c.timestamp}:${c.amount}`))
+    for (const c of collection.contributions) {
+      if (!seen.has(`${c.timestamp}:${c.amount}`)) existing.contributions.push(c)
+    }
+    existing.status = collection.status
+  } else {
+    state.collections[collection.id] = collection
+  }
+  persist()
+}
+
+export function addContribution(id: string, contribution: Contribution) {
+  const collection = state.collections[id]
+  if (!collection) return
+  collection.contributions.push(contribution)
+  persist()
+}
+
+export function setStatus(id: string, status: Collection['status']) {
+  const collection = state.collections[id]
+  if (!collection) return
+  collection.status = status
+  persist()
+}
+
+export function raisedAmount(collection: Collection): number {
+  return collection.contributions.reduce((sum, c) => sum + c.amount, 0)
+}
