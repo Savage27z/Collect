@@ -45,3 +45,21 @@ export function decodeCollection(encoded: string): Collection | null {
   }
 }
 
+/** Plain https URL for the collection page, snapshot included. */
+export function collectionUrl(collection: Collection): string {
+  return `${location.origin}/c/${collection.id}?d=${encodeCollection(collection)}`
+}
+
+/** Deep link that opens the collection inside Nimiq Pay. */
+export function deepLink(collection: Collection): string {
+  return `nimiqpay://miniapp?url=${encodeURIComponent(collectionUrl(collection))}`
+}
+
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    return false
+  }
+}
