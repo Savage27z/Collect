@@ -216,6 +216,8 @@ const hasCollections = allCollections().length > 0
   background: var(--nimiq-blue);
   color: var(--nimiq-gold);
   font-weight: 800;
+  font-size: 1rem;
+  line-height: 1;
   flex-shrink: 0;
 }
 
