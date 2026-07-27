@@ -39,3 +39,80 @@ const collections = allCollections()
   </div>
 </template>
 
+<style scoped>
+.empty {
+  text-align: center;
+  color: var(--text-soft);
+}
+
+.empty .btn {
+  margin-top: 0.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.title {
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+
+.bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(31, 35, 72, 0.08);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0582ca, #265dd7);
+}
+
+.fill.done {
+  background: linear-gradient(90deg, #21bca5, #41a38e);
+}
+
+.status {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.status.open {
+  background: rgba(33, 188, 165, 0.12);
+  color: #148673;
+}
+
+.status.closed {
+  background: rgba(31, 35, 72, 0.08);
+  color: var(--text-soft);
+}
+</style>
