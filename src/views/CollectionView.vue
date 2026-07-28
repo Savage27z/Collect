@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getCollection, importCollection, addContribution, raisedAmount } from '../lib/store'
 import { decodeCollection } from '../lib/share'
-import { payNim, useNimiq } from '../lib/nimiq'
-import { formatNim } from '../lib/format'
+import { payNim, useNimiq, MIN_CONTRIBUTION_NIM, MAX_CONTRIBUTION_NIM } from '../lib/nimiq'
+import { formatNim, shortAddress } from '../lib/format'
 import ProgressBar from '../components/ProgressBar.vue'
 import ContributorList from '../components/ContributorList.vue'
 
@@ -24,6 +24,10 @@ const name = ref('')
 const paying = ref(false)
 const paidTx = ref('')
 const payError = ref('')
+/** The `?d=` snapshot failed validation — a malformed or tampered link. */
+const linkInvalid = ref(false)
+/** This link names a different payment address than the one we stored before. */
+const addressMismatch = ref(false)
 
 const quickAmounts = [5, 10, 20, 50]
 
@@ -32,7 +36,12 @@ onMounted(() => {
   const encoded = route.query.d
   if (typeof encoded === 'string') {
     const decoded = decodeCollection(encoded)
-    if (decoded && decoded.id === id.value) importCollection(decoded)
+    if (!decoded) {
+      linkInvalid.value = true
+    } else if (decoded.id === id.value) {
+      const result = importCollection(decoded)
+      addressMismatch.value = result.addressMismatch
+    }
     version.value++
   }
 })
@@ -44,6 +53,14 @@ async function contribute() {
   const c = collection.value
   if (!c || !amount.value || amount.value <= 0) {
     payError.value = 'Pick an amount first.'
+    return
+  }
+  if (amount.value < MIN_CONTRIBUTION_NIM) {
+    payError.value = `Minimum contribution is ${MIN_CONTRIBUTION_NIM} NIM.`
+    return
+  }
+  if (amount.value > MAX_CONTRIBUTION_NIM) {
+    payError.value = `That's over the ${formatNim(MAX_CONTRIBUTION_NIM)} NIM limit — check the amount.`
     return
   }
   payError.value = ''
@@ -83,8 +100,12 @@ async function contribute() {
 
 <template>
   <div v-if="!collection" class="card stack notfound">
-    <h1>Collection not found</h1>
-    <p class="hint">This link may be incomplete — ask the organizer to share it again.</p>
+    <h1>{{ linkInvalid ? 'This link looks broken' : 'Collection not found' }}</h1>
+    <p v-if="linkInvalid" class="hint">
+      The collection data in this link is malformed or was modified in transit.
+      Ask the organizer to send you the original link.
+    </p>
+    <p v-else class="hint">This link may be incomplete — ask the organizer to share it again.</p>
     <router-link to="/create" class="btn btn-primary">Create your own collection</router-link>
   </div>
 
@@ -98,6 +119,12 @@ async function contribute() {
     <div v-if="paidTx" class="banner banner-success">
       ✅ Thank you for contributing! You're on the wall below.
       <span v-if="!paidTx.startsWith('demo-')" class="mono tx">tx {{ paidTx.slice(0, 16) }}…</span>
+    </div>
+
+    <div v-if="addressMismatch" class="banner banner-warning">
+      ⚠️ <strong>This link points to a different wallet</strong> than the one you saw
+      before for this collection. Someone may have altered it. Check with the
+      organizer before paying.
     </div>
 
     <div v-if="isClosed" class="banner banner-info">
@@ -121,6 +148,11 @@ async function contribute() {
       <div>
         <label for="name">Your name <span class="optional">optional — shown on the wall</span></label>
         <input id="name" v-model="name" type="text" placeholder="Bob" maxlength="30" />
+      </div>
+
+      <div class="recipient">
+        <span class="recipient-label">Paying</span>
+        <span class="mono recipient-address">{{ shortAddress(collection.organizerAddress) }}</span>
       </div>
 
       <p v-if="payError" class="error-text">{{ payError }}</p>
@@ -201,6 +233,27 @@ async function contribute() {
 
 .pay-btn {
   font-size: 1.05rem;
+}
+
+.recipient {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  background: rgba(43, 30, 20, 0.04);
+}
+
+.recipient-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.recipient-address {
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .center {

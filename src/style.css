@@ -249,6 +249,12 @@ textarea:focus {
   border: 1px solid rgba(255, 93, 115, 0.25);
 }
 
+.banner-warning {
+  background: rgba(217, 68, 50, 0.08);
+  color: var(--danger);
+  border: 1px solid rgba(217, 68, 50, 0.35);
+}
+
 .banner-success {
   background: rgba(61, 164, 126, 0.1);
   color: var(--success);

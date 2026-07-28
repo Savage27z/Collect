@@ -21,4 +21,9 @@ export interface Collection {
   contributions: Contribution[]
   status: CollectionStatus
   createdAt: number
+  /**
+   * True when this device created the collection. Organizer-owned collections are
+   * the source of truth and are never mutated by an incoming shared snapshot.
+   */
+  isOrganizer?: boolean
 }

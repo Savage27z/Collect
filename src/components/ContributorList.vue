@@ -14,6 +14,11 @@ const sorted = computed(() =>
 function initial(c: Contribution): string {
   return (c.contributorName?.trim()?.[0] || '?').toUpperCase()
 }
+
+/** Simulated contributions (outside Nimiq Pay) carry no real transaction. */
+function isDemo(c: Contribution): boolean {
+  return !c.txHash || c.txHash.startsWith('demo-')
+}
 </script>
 
 <template>
@@ -25,7 +30,10 @@ function initial(c: Contribution): string {
       <span class="avatar">{{ initial(c) }}</span>
       <span class="who">
         <span class="name">{{ c.contributorName || 'Anonymous' }}</span>
-        <span class="when">{{ timeAgo(c.timestamp) }}</span>
+        <span class="when">
+          {{ timeAgo(c.timestamp) }}
+          <span v-if="isDemo(c)" class="demo-tag" title="Simulated — not an on-chain payment">demo</span>
+        </span>
       </span>
       <span class="amount">+{{ formatNim(c.amount) }} NIM</span>
     </li>
@@ -87,6 +95,19 @@ function initial(c: Contribution): string {
 .when {
   font-size: 0.75rem;
   color: var(--text-soft);
+}
+
+.demo-tag {
+  display: inline-block;
+  margin-left: 0.3rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  background: rgba(43, 30, 20, 0.08);
+  color: var(--text-softer);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .amount {
