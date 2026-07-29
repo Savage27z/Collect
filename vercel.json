@@ -6,11 +6,11 @@
       "source": "/(.*)",
       "headers": [
         {
+          "comment": "Mini apps run inside the Nimiq Pay WebView, so the policy must allow the host to embed the page and inject its provider, and allow reads from the public Nimiq explorer. Deliberately permissive where the wallet needs it; still blocks arbitrary third-party script and connection targets.",
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://v2.nimiqwatch.com https://api.nimiq.watch https://*.nimiq.com wss://*.nimiq.com; base-uri 'self'"
         },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" }
       ]
