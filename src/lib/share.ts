@@ -22,11 +22,51 @@ function base64UrlDecode(encoded: string): string {
   return new TextDecoder().decode(bytes)
 }
 
+/**
+ * Compact wire format. Share links get pasted into group chats and turned into
+ * QR codes, so every character counts: keys are single letters, the id lives in
+ * the URL path instead of the payload, the address drops its display spaces,
+ * and anything at its default value is omitted entirely.
+ */
+interface CompactContribution {
+  /** name */ n?: string
+  /** amount */ m: number
+  /** txHash */ h?: string
+  /** timestamp */ t: number
+}
+
+interface CompactSnapshot {
+  /** title */ t: string
+  /** goal */ g: number
+  /** address, no spaces */ a: string
+  /** description */ d?: string
+  /** contributions */ c?: CompactContribution[]
+  /** closed */ x?: 1
+}
+
+/** Nimiq addresses display as 9 groups of 4 characters. */
+function spaceAddress(address: string): string {
+  const clean = address.replace(/\s/g, '').toUpperCase()
+  return clean.match(/.{1,4}/g)?.join(' ') ?? clean
+}
+
 export function encodeCollection(collection: Collection): string {
-  // `isOrganizer` is per-device state, not part of the shared collection — it
-  // would only bloat the link, and the decoder ignores it anyway.
-  const { isOrganizer: _omit, ...shared } = collection
-  return base64UrlEncode(JSON.stringify(shared))
+  const snap: CompactSnapshot = {
+    t: collection.title,
+    g: collection.goalAmount,
+    a: collection.organizerAddress.replace(/\s/g, ''),
+  }
+  if (collection.description) snap.d = collection.description
+  if (collection.contributions.length) {
+    snap.c = collection.contributions.map(c => {
+      const out: CompactContribution = { m: c.amount, t: c.timestamp }
+      if (c.contributorName) out.n = c.contributorName
+      if (c.txHash) out.h = c.txHash
+      return out
+    })
+  }
+  if (collection.status === 'closed') snap.x = 1
+  return base64UrlEncode(JSON.stringify(snap))
 }
 
 /** Collection ids are nanoid-shaped; anything else is a crafted link. */
@@ -52,47 +92,70 @@ function finitePositive(value: unknown, max = MAX_AMOUNT): value is number {
  * Snapshots arrive from the URL, so every field is attacker-controlled: validate
  * each one and drop anything malformed rather than trusting the payload.
  */
-function sanitizeContribution(raw: unknown): Contribution | null {
+function sanitizeContribution(raw: unknown, isLegacy = false): Contribution | null {
   if (!raw || typeof raw !== 'object') return null
   const c = raw as Record<string, unknown>
-  if (!finitePositive(c.amount)) return null
-  const timestamp =
-    typeof c.timestamp === 'number' && Number.isFinite(c.timestamp) ? c.timestamp : Date.now()
-  const name = typeof c.contributorName === 'string' ? c.contributorName.slice(0, MAX_NAME) : undefined
+  const amount = isLegacy ? c.amount : c.m
+  const rawTime = isLegacy ? c.timestamp : c.t
+  const rawName = isLegacy ? c.contributorName : c.n
+  const rawHash = isLegacy ? c.txHash : c.h
+
+  if (!finitePositive(amount)) return null
+  const timestamp = typeof rawTime === 'number' && Number.isFinite(rawTime) ? rawTime : Date.now()
+  const name = typeof rawName === 'string' ? rawName.slice(0, MAX_NAME) : undefined
   return {
     contributorName: name || undefined,
-    amount: c.amount,
-    txHash: typeof c.txHash === 'string' ? c.txHash.slice(0, 128) : undefined,
+    amount,
+    txHash: typeof rawHash === 'string' ? rawHash.slice(0, 128) : undefined,
     timestamp,
   }
 }
 
-export function decodeCollection(encoded: string): Collection | null {
+/**
+ * Decode a snapshot from a share link. `id` comes from the URL path, not the
+ * payload, so the caller passes it in.
+ *
+ * Accepts the compact format and the original long-form one (links already
+ * shared in the wild must keep working).
+ */
+export function decodeCollection(encoded: string, id: string): Collection | null {
   try {
+    // `id` becomes an object key in the store — reject '__proto__' and friends.
+    if (!isValidId(id)) return null
     const parsed = JSON.parse(base64UrlDecode(encoded))
     if (!parsed || typeof parsed !== 'object') return null
-    // `id` becomes an object key in the store — reject '__proto__' and friends.
-    if (!isValidId(parsed.id)) return null
-    if (typeof parsed.title !== 'string' || !parsed.title.trim()) return null
-    if (!finitePositive(parsed.goalAmount)) return null
+
+    // Long-form links carry their own id; it must match the path.
+    const isLegacy = typeof parsed.title === 'string' || typeof parsed.id === 'string'
+    if (isLegacy && parsed.id !== id) return null
+
+    const title = isLegacy ? parsed.title : parsed.t
+    const goalAmount = isLegacy ? parsed.goalAmount : parsed.g
+    const address = isLegacy ? parsed.organizerAddress : parsed.a
+    const description = isLegacy ? parsed.description : parsed.d
+    const rawContributions = isLegacy ? parsed.contributions : parsed.c
+    const closed = isLegacy ? parsed.status === 'closed' : parsed.x === 1
+
+    if (typeof title !== 'string' || !title.trim()) return null
+    if (!finitePositive(goalAmount)) return null
     // The organizer address is the payment recipient — never accept a free-form string.
-    if (typeof parsed.organizerAddress !== 'string' || !isValidNimiqAddress(parsed.organizerAddress)) {
-      return null
-    }
-    const contributions = Array.isArray(parsed.contributions)
-      ? (parsed.contributions as unknown[])
-          .map(sanitizeContribution)
+    if (typeof address !== 'string' || !isValidNimiqAddress(address)) return null
+
+    const contributions = Array.isArray(rawContributions)
+      ? (rawContributions as unknown[])
+          .map(raw => sanitizeContribution(raw, isLegacy))
           .filter((c): c is Contribution => c !== null)
       : []
+
     return {
-      id: parsed.id,
-      title: parsed.title.slice(0, MAX_TITLE),
+      id,
+      title: title.slice(0, MAX_TITLE),
       description:
-        typeof parsed.description === 'string' ? parsed.description.slice(0, MAX_DESCRIPTION) : undefined,
-      goalAmount: parsed.goalAmount,
-      organizerAddress: parsed.organizerAddress,
+        typeof description === 'string' ? description.slice(0, MAX_DESCRIPTION) : undefined,
+      goalAmount,
+      organizerAddress: spaceAddress(address),
       contributions,
-      status: parsed.status === 'closed' ? 'closed' : 'open',
+      status: closed ? 'closed' : 'open',
       createdAt: typeof parsed.createdAt === 'number' ? parsed.createdAt : Date.now(),
     }
   } catch {

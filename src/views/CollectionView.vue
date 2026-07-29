@@ -35,10 +35,10 @@ onMounted(() => {
   // Shared links carry a snapshot of the collection in the `d` query param.
   const encoded = route.query.d
   if (typeof encoded === 'string') {
-    const decoded = decodeCollection(encoded)
+    const decoded = decodeCollection(encoded, id.value)
     if (!decoded) {
       linkInvalid.value = true
-    } else if (decoded.id === id.value) {
+    } else {
       const result = importCollection(decoded)
       addressMismatch.value = result.addressMismatch
     }
