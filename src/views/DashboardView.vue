@@ -26,6 +26,11 @@ const shareDeepLink = computed(() => (collection.value ? deepLink(collection.val
 // place this device can learn about them.
 const { sync, syncing, syncError, synced } = useChainSync(collection, () => version.value++)
 
+/** Only claim on-chain verification once real transactions have been read back. */
+const verifiedCount = computed(
+  () => collection.value?.contributions.filter(c => c.verified).length ?? 0
+)
+
 const qrDataUrl = ref('')
 const copied = ref<'' | 'link' | 'remind'>('')
 
@@ -114,8 +119,12 @@ function toggleClosed() {
         </button>
       </div>
       <p v-if="syncError" class="hint">{{ syncError }}</p>
+      <p v-else-if="verifiedCount" class="hint">
+        ✓ {{ verifiedCount }} contribution{{ verifiedCount === 1 ? '' : 's' }} verified on the Nimiq
+        blockchain — updates automatically as people pay.
+      </p>
       <p v-else-if="synced" class="hint">
-        ✓ Verified against the Nimiq blockchain — updates automatically as people pay.
+        Watching the Nimiq blockchain — contributions appear here automatically as people pay.
       </p>
       <ContributorList :contributions="collection.contributions" />
     </div>
