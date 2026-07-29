@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import QRCode from 'qrcode'
 import { getCollection, raisedAmount, setStatus } from '../lib/store'
-import { collectionUrl, deepLink, copyText } from '../lib/share'
+import { collectionUrl, copyText } from '../lib/share'
 import { useChainSync } from '../lib/useChainSync'
 import { formatNim, shortAddress } from '../lib/format'
 import ProgressBar from '../components/ProgressBar.vue'
@@ -20,7 +20,6 @@ const collection = computed(() => {
 
 const raised = computed(() => (collection.value ? raisedAmount(collection.value) : 0))
 const shareUrl = computed(() => (collection.value ? collectionUrl(collection.value) : ''))
-const shareDeepLink = computed(() => (collection.value ? deepLink(collection.value) : ''))
 
 // Contributions are paid on other people's devices — the blockchain is the only
 // place this device can learn about them.
@@ -34,9 +33,16 @@ const verifiedCount = computed(
 const qrDataUrl = ref('')
 const copied = ref<'' | 'link' | 'remind'>('')
 
+/**
+ * The QR encodes the plain https URL, not the nimiqpay:// deep link.
+ *
+ * Nimiq Pay's scanner is built for payment QRs and generic camera apps don't
+ * know the custom scheme, so a deep-link QR is a dead end. An https URL scans
+ * anywhere: it opens the mobile browser, which then offers "Open in Nimiq Pay".
+ */
 async function renderQr() {
-  if (!shareDeepLink.value) return
-  qrDataUrl.value = await QRCode.toDataURL(shareDeepLink.value, {
+  if (!shareUrl.value) return
+  qrDataUrl.value = await QRCode.toDataURL(shareUrl.value, {
     width: 480,
     margin: 1,
     color: { dark: '#2b1e14', light: '#ffffff' },
@@ -44,7 +50,7 @@ async function renderQr() {
 }
 
 onMounted(renderQr)
-watch(shareDeepLink, renderQr)
+watch(shareUrl, renderQr)
 
 async function copyLink() {
   if (await copyText(shareUrl.value)) {
@@ -108,7 +114,10 @@ function toggleClosed() {
           {{ copied === 'remind' ? '✓ Copied!' : '🔔 Copy reminder' }}
         </button>
       </div>
-      <p class="hint">The QR opens straight into Nimiq Pay. The link works anywhere — WhatsApp, Telegram, group chat.</p>
+      <p class="hint">
+        Share the link anywhere — WhatsApp, Telegram, group chat. To pay from another
+        phone: scan the QR with its camera, or paste the link into Nimiq Pay → Discover.
+      </p>
     </div>
 
     <div class="card stack">
