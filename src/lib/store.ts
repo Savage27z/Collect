@@ -114,6 +114,25 @@ export function importCollection(collection: Collection): ImportResult {
   return { ignored: false, addressMismatch: false }
 }
 
+/**
+ * Replace locally-known contributions with what the blockchain reports.
+ *
+ * Chain data is authoritative: it is the only view that sees payments made on
+ * other people's devices. Simulated (demo-mode) entries have no on-chain
+ * counterpart, so they are preserved; locally-recorded real payments are
+ * dropped in favour of their confirmed chain version to avoid double-counting.
+ */
+export function mergeChainContributions(id: string, chain: Contribution[]) {
+  const collection = state.collections[id]
+  if (!collection) return
+  const onChain = new Set(chain.map(c => c.txHash).filter(Boolean))
+  const demoOnly = collection.contributions.filter(
+    c => (!c.txHash || c.txHash.startsWith('demo-')) && !onChain.has(c.txHash)
+  )
+  collection.contributions = [...chain, ...demoOnly]
+  persist()
+}
+
 export function addContribution(id: string, contribution: Contribution) {
   const collection = state.collections[id]
   if (!collection) return

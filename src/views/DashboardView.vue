@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import QRCode from 'qrcode'
 import { getCollection, raisedAmount, setStatus } from '../lib/store'
 import { collectionUrl, deepLink, copyText } from '../lib/share'
+import { useChainSync } from '../lib/useChainSync'
 import { formatNim, shortAddress } from '../lib/format'
 import ProgressBar from '../components/ProgressBar.vue'
 import ContributorList from '../components/ContributorList.vue'
@@ -20,6 +21,10 @@ const collection = computed(() => {
 const raised = computed(() => (collection.value ? raisedAmount(collection.value) : 0))
 const shareUrl = computed(() => (collection.value ? collectionUrl(collection.value) : ''))
 const shareDeepLink = computed(() => (collection.value ? deepLink(collection.value) : ''))
+
+// Contributions are paid on other people's devices — the blockchain is the only
+// place this device can learn about them.
+const { sync, syncing, syncError, synced } = useChainSync(collection, () => version.value++)
 
 const qrDataUrl = ref('')
 const copied = ref<'' | 'link' | 'remind'>('')
@@ -102,7 +107,16 @@ function toggleClosed() {
     </div>
 
     <div class="card stack">
-      <h2>Contributors ({{ collection.contributions.length }})</h2>
+      <div class="list-head">
+        <h2>Contributors ({{ collection.contributions.length }})</h2>
+        <button class="refresh" :disabled="syncing" @click="sync">
+          {{ syncing ? 'Syncing…' : '↻ Refresh' }}
+        </button>
+      </div>
+      <p v-if="syncError" class="hint">{{ syncError }}</p>
+      <p v-else-if="synced" class="hint">
+        ✓ Verified against the Nimiq blockchain — updates automatically as people pay.
+      </p>
       <ContributorList :contributions="collection.contributions" />
     </div>
 
@@ -138,6 +152,31 @@ function toggleClosed() {
 .status.closed {
   background: rgba(43, 30, 20, 0.08);
   color: var(--text-soft);
+}
+
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.refresh {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.refresh:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .share-card {

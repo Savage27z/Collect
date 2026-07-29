@@ -2,8 +2,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { getCollection, importCollection, addContribution, raisedAmount } from '../lib/store'
-import { decodeCollection } from '../lib/share'
+import { decodeCollection, deepLink } from '../lib/share'
 import { payNim, useNimiq, MIN_CONTRIBUTION_NIM, MAX_CONTRIBUTION_NIM } from '../lib/nimiq'
+import { buildMemo } from '../lib/chain'
+import { useChainSync } from '../lib/useChainSync'
 import { formatNim, shortAddress } from '../lib/format'
 import ProgressBar from '../components/ProgressBar.vue'
 import ContributorList from '../components/ContributorList.vue'
@@ -49,6 +51,13 @@ onMounted(() => {
 const raised = computed(() => (collection.value ? raisedAmount(collection.value) : 0))
 const isClosed = computed(() => collection.value?.status === 'closed')
 
+// Read confirmed contributions from the blockchain so this page reflects what
+// everyone else has paid, not just this device.
+const { sync, syncing, syncError, synced } = useChainSync(collection, () => version.value++)
+
+/** Deep link that reopens this exact collection inside Nimiq Pay. */
+const payDeepLink = computed(() => (collection.value ? deepLink(collection.value) : '#'))
+
 async function contribute() {
   const c = collection.value
   if (!c || !amount.value || amount.value <= 0) {
@@ -68,7 +77,8 @@ async function contribute() {
   try {
     let txHash: string
     if (nimiqReady.value) {
-      txHash = await payNim(c.organizerAddress, amount.value, `Collect: ${c.title}`)
+      // The memo tags the payment on-chain so every device can see it later.
+      txHash = await payNim(c.organizerAddress, amount.value, buildMemo(c.id, name.value.trim()))
     } else {
       // Demo mode outside Nimiq Pay: simulate the payment so the flow can be tested.
       const ok = confirm(
@@ -90,6 +100,8 @@ async function contribute() {
     paidTx.value = txHash
     amount.value = null
     version.value++
+    // Pull the confirmed transaction back from the chain.
+    if (nimiqReady.value) setTimeout(sync, 2000)
   } catch (e: any) {
     payError.value = e?.message || 'Payment was cancelled or failed.'
   } finally {
@@ -157,18 +169,37 @@ async function contribute() {
 
       <p v-if="payError" class="error-text">{{ payError }}</p>
 
-      <button class="btn btn-gold pay-btn" :disabled="paying || nimiqConnecting" @click="contribute">
+      <!-- Inside Nimiq Pay: pay for real. -->
+      <button
+        v-if="nimiqReady || nimiqConnecting"
+        class="btn btn-gold pay-btn"
+        :disabled="paying || nimiqConnecting"
+        @click="contribute"
+      >
         <template v-if="paying">Waiting for Nimiq Pay…</template>
         <template v-else-if="nimiqConnecting">Connecting…</template>
         <template v-else>💸 Contribute{{ amount ? ` ${formatNim(amount)} NIM` : '' }}</template>
       </button>
-      <p v-if="!nimiqReady && !nimiqConnecting" class="hint center">
-        Not inside Nimiq Pay — payments run in demo mode.
-      </p>
+
+      <!-- Outside Nimiq Pay: send them there rather than dead-ending. -->
+      <template v-else>
+        <a class="btn btn-gold pay-btn" :href="payDeepLink">📱 Open in Nimiq Pay to contribute</a>
+        <p class="hint center">
+          Payments happen inside Nimiq Pay.
+          <a href="https://www.nimiq.com/nimiq-pay/" target="_blank" rel="noopener noreferrer">Get the app</a>
+          — or
+          <button class="linklike" :disabled="paying" @click="contribute">preview in demo mode</button>.
+        </p>
+      </template>
     </div>
 
     <div class="card stack">
-      <h2>Contributors ({{ collection.contributions.length }})</h2>
+      <div class="list-head">
+        <h2>Contributors ({{ collection.contributions.length }})</h2>
+        <span v-if="syncing" class="sync-note">syncing…</span>
+        <span v-else-if="synced" class="sync-note verified">✓ on-chain</span>
+      </div>
+      <p v-if="syncError" class="hint">{{ syncError }}</p>
       <ContributorList :contributions="collection.contributions" />
     </div>
   </div>
@@ -258,6 +289,40 @@ async function contribute() {
 
 .center {
   text-align: center;
+}
+
+.list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sync-note {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-softer);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sync-note.verified {
+  color: var(--success);
+}
+
+.linklike {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--coral-dark);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linklike:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .tx {

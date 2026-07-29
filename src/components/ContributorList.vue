@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Contribution } from '../lib/types'
 import { formatNim, timeAgo } from '../lib/format'
+import { explorerTxUrl } from '../lib/chain'
 
 const props = defineProps<{
   contributions: Contribution[]
@@ -32,7 +33,17 @@ function isDemo(c: Contribution): boolean {
         <span class="name">{{ c.contributorName || 'Anonymous' }}</span>
         <span class="when">
           {{ timeAgo(c.timestamp) }}
-          <span v-if="isDemo(c)" class="demo-tag" title="Simulated — not an on-chain payment">demo</span>
+          <a
+            v-if="c.verified && c.txHash"
+            class="tag verified"
+            :href="explorerTxUrl(c.txHash)"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Confirmed on the Nimiq blockchain — view transaction"
+            @click.stop
+          >✓ on-chain</a>
+          <span v-else-if="isDemo(c)" class="tag demo" title="Simulated — not an on-chain payment">demo</span>
+          <span v-else class="tag pending" title="Sent — waiting for blockchain confirmation">pending</span>
         </span>
       </span>
       <span class="amount">+{{ formatNim(c.amount) }} NIM</span>
@@ -97,7 +108,7 @@ function isDemo(c: Contribution): boolean {
   color: var(--text-soft);
 }
 
-.demo-tag {
+.tag {
   display: inline-block;
   margin-left: 0.3rem;
   padding: 0.05rem 0.35rem;
@@ -108,6 +119,17 @@ function isDemo(c: Contribution): boolean {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.tag.verified {
+  background: rgba(61, 164, 126, 0.14);
+  color: var(--success);
+}
+
+.tag.pending {
+  background: rgba(255, 93, 115, 0.12);
+  color: var(--coral-dark);
 }
 
 .amount {

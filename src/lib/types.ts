@@ -5,6 +5,11 @@ export interface Contribution {
   /** Nimiq transaction hash, when paid through Nimiq Pay. */
   txHash?: string
   timestamp: number
+  /**
+   * Confirmed on the Nimiq blockchain (read back via the explorer), as opposed
+   * to a locally-recorded or simulated payment.
+   */
+  verified?: boolean
 }
 
 export type CollectionStatus = 'open' | 'closed'
