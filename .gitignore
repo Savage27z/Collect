@@ -13,3 +13,5 @@ dist
 *.key
 *.p12
 *.keystore
+
+.vercel

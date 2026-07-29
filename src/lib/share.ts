@@ -23,7 +23,10 @@ function base64UrlDecode(encoded: string): string {
 }
 
 export function encodeCollection(collection: Collection): string {
-  return base64UrlEncode(JSON.stringify(collection))
+  // `isOrganizer` is per-device state, not part of the shared collection — it
+  // would only bloat the link, and the decoder ignores it anyway.
+  const { isOrganizer: _omit, ...shared } = collection
+  return base64UrlEncode(JSON.stringify(shared))
 }
 
 /** Collection ids are nanoid-shaped; anything else is a crafted link. */
